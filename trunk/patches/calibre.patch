@@ -1,0 +1,445 @@
+=== modified file 'setup.py'
+--- setup.py	2009-03-12 17:41:18 +0000
++++ setup.py	2009-03-28 03:39:25 +0000
+@@ -48,8 +48,8 @@
+ if __name__ == '__main__':
+     from setuptools import setup, find_packages
+     from pyqtdistutils import PyQtExtension, build_ext, Extension
+-    from upload import sdist, pot, build, build_py, manual, \
+-                        resources, clean, gui, translations, update, \
++    from upload import sdist, pot, build, gui, build_py, manual, \
++                        resources, clean, translations, update, \
+                         tag_release, upload_demo, build_linux, build_windows, \
+                         build_osx, upload_installers, upload_user_manual, \
+                         upload_to_pypi, stage3, stage2, stage1, upload, \
+@@ -71,11 +71,6 @@
+                                       'src/calibre/utils/msdes/des.c'],
+                              include_dirs=['src/calibre/utils/msdes']),
+                    
+-                    PyQtExtension('calibre.plugins.pictureflow',
+-                                  ['src/calibre/gui2/pictureflow/pictureflow.cpp',
+-                                   'src/calibre/gui2/pictureflow/pictureflow.h'],
+-                                   ['src/calibre/gui2/pictureflow/pictureflow.sip']
+-                                  )
+                  ]
+     if iswindows:
+         ext_modules.append(Extension('calibre.plugins.winutil',
+
+=== modified file 'src/calibre/__init__.py'
+--- src/calibre/__init__.py	2009-03-15 20:09:45 +0000
++++ src/calibre/__init__.py	2009-03-28 04:17:04 +0000
+@@ -12,7 +12,6 @@
+ 
+ 
+ from PyQt4.QtCore import QUrl
+-from PyQt4.QtGui  import QDesktopServices
+ from calibre.startup import plugins, winutil, winutilerror
+ from calibre.constants import iswindows, isosx, islinux, isfrozen, \
+                               terminal_controller, preferred_encoding, \
+
+=== modified file 'src/calibre/devices/__init__.py'
+--- src/calibre/devices/__init__.py	2009-02-28 22:25:37 +0000
++++ src/calibre/devices/__init__.py	2009-03-28 22:52:50 +0000
+@@ -6,14 +6,7 @@
+ '''
+ 
+ def devices():
+-    from calibre.devices.prs500.driver import PRS500
+-    from calibre.devices.prs505.driver import PRS505
+-    from calibre.devices.prs700.driver import PRS700
+-    from calibre.devices.cybookg3.driver import CYBOOKG3
+-    from calibre.devices.kindle.driver import KINDLE
+-    from calibre.devices.kindle.driver import KINDLE2
+-    from calibre.devices.blackberry.driver import BLACKBERRY
+-    return (PRS500, PRS505, PRS700, CYBOOKG3, KINDLE, KINDLE2, BLACKBERRY)
++    return ()
+ 
+ import time
+ 
+
+=== modified file 'src/calibre/ebooks/epub/from_html.py'
+--- src/calibre/ebooks/epub/from_html.py	2009-03-19 03:32:47 +0000
++++ src/calibre/ebooks/epub/from_html.py	2009-03-30 02:40:14 +0000
+@@ -36,7 +36,6 @@
+ 
+ from lxml.etree import XPath
+ from lxml import html, etree
+-from PyQt4.Qt import QApplication, QPixmap
+ 
+ from calibre.ebooks.html import Processor, merge_metadata, get_filelist,\
+     opf_traverse, create_metadata, rebase_toc, Link, parser
+@@ -135,6 +134,9 @@
+         self.fix_markup()
+             
+     def convert_image(self, img):
++        return
++        # Killed by jrv since I don't have QApplication
++        
+         rpath = img.get('src', '')
+         path = os.path.join(os.path.dirname(self.save_path()), *rpath.split('/'))
+         if os.path.exists(path) and os.path.isfile(path):
+@@ -290,27 +292,6 @@
+ '''
+ 
+ def create_cover_image(src, dest, screen_size, rescale_cover=True):
+-    try:
+-        from PyQt4.Qt import QImage, Qt
+-        if QApplication.instance() is None:
+-            QApplication([])
+-        im = QImage()
+-        im.load(src)
+-        if im.isNull():
+-            raise ValueError('Invalid cover image')
+-        if rescale_cover and screen_size is not None:
+-            width, height = im.width(), im.height()
+-            dw, dh = (screen_size[0]-width)/float(width), (screen_size[1]-height)/float(height)
+-            delta = min(dw, dh)
+-            if delta > 0:
+-                nwidth = int(width + delta*(width))
+-                nheight = int(height + delta*(height))
+-                im = im.scaled(int(nwidth), int(nheight), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+-        im.save(dest)
+-    except:
+-        import traceback
+-        traceback.print_exc()
+-        return False
+     return True
+ 
+ def process_title_page(mi, filelist, htmlfilemap, opts, tdir):
+@@ -452,7 +433,7 @@
+         if opts.page:
+             logger.info('\tBuilding page map...')
+             add_page_map(opf_path, opts)
+-        check_links(opf_path, opts.pretty_print)
++        # check_links(opf_path, opts.pretty_print)
+         
+         opf = OPF(opf_path, tdir)
+         opf.remove_guide()
+
+=== modified file 'src/calibre/ebooks/metadata/epub.py'
+--- src/calibre/ebooks/metadata/epub.py	2009-02-09 01:10:53 +0000
++++ src/calibre/ebooks/metadata/epub.py	2009-03-28 23:11:48 +0000
+@@ -10,8 +10,7 @@
+ from contextlib import closing
+ 
+ from PyQt4.Qt import QUrl, QEventLoop, QSize, QByteArray, QBuffer, \
+-                     SIGNAL, QPainter, QImage, QObject, QApplication, Qt, QPalette
+-from PyQt4.QtWebKit import QWebPage
++                     SIGNAL, QObject, Qt
+ 
+ from calibre.utils.zipfile import ZipFile, BadZipfile, safe_replace
+ from calibre.ebooks.BeautifulSoup import BeautifulStoneSoup
+@@ -107,42 +106,10 @@
+     HEIGHT = 800
+     
+     def __init__(self, path):
+-        if QApplication.instance() is None:
+-            QApplication([])
+-        QObject.__init__(self)
+-        self.loop = QEventLoop()
+-        self.page = QWebPage()
+-        pal = self.page.palette()
+-        pal.setBrush(QPalette.Background, Qt.white)
+-        self.page.setPalette(pal)
+-        self.page.setViewportSize(QSize(self.WIDTH, self.HEIGHT))
+-        self.page.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
+-        self.page.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
+-        QObject.connect(self.page, SIGNAL('loadFinished(bool)'), self.render_html)
+-        self._image_data = None
+-        self.rendered = False
+-        url = QUrl.fromLocalFile(os.path.normpath(path))
+-        self.page.mainFrame().load(url)
++    	return
+         
+     def render_html(self, ok):
+-        try:
+-            if not ok:
+-                self.rendered = True
+-                return
+-            image = QImage(self.page.viewportSize(), QImage.Format_ARGB32)
+-            image.setDotsPerMeterX(96*(100/2.54))
+-            image.setDotsPerMeterY(96*(100/2.54))
+-            painter = QPainter(image)
+-            self.page.mainFrame().render(painter)
+-            painter.end()
+-            ba = QByteArray()
+-            buf = QBuffer(ba)
+-            buf.open(QBuffer.WriteOnly)
+-            image.save(buf, 'JPEG')
+-            self._image_data = str(ba.data())
+-        finally:
+-            self.loop.exit(0)
+-        self.rendered = True
++    	return
+ 
+     def image_data():
+         def fget(self):
+
+=== modified file 'src/calibre/ebooks/mobi/writer.py'
+--- src/calibre/ebooks/mobi/writer.py	2009-03-22 17:57:14 +0000
++++ src/calibre/ebooks/mobi/writer.py	2009-03-30 18:50:00 +0000
+@@ -17,15 +17,15 @@
+ from collections import defaultdict
+ from urlparse import urldefrag
+ import logging
+-from PIL import Image
++import Image
+ from calibre.ebooks.oeb.base import XML_NS, XHTML, XHTML_NS, OEB_DOCS, \
+     OEB_RASTER_IMAGES
+ from calibre.ebooks.oeb.base import namespace, prefixname
+ from calibre.ebooks.oeb.base import urlnormalize
+ from calibre.ebooks.oeb.base import Logger, OEBBook
+ from calibre.ebooks.oeb.profile import Context
+-from calibre.ebooks.oeb.transforms.flatcss import CSSFlattener
+-from calibre.ebooks.oeb.transforms.rasterize import SVGRasterizer
++#from calibre.ebooks.oeb.transforms.flatcss import CSSFlattener
++#from calibre.ebooks.oeb.transforms.rasterize import SVGRasterizer
+ from calibre.ebooks.oeb.transforms.trimmanifest import ManifestTrimmer
+ from calibre.ebooks.oeb.transforms.htmltoc import HTMLTOCAdder
+ from calibre.ebooks.oeb.transforms.manglecase import CaseMangler
+@@ -137,6 +137,11 @@
+         self.oeb = oeb
+         self.images = images
+         self.logger = oeb.logger
++
++
++
++        self.inside_pre = 0
++
+         self.id_offsets = {}
+         self.href_offsets = defaultdict(list)
+         self.breaks = []
+@@ -224,6 +229,10 @@
+            or namespace(elem.tag) not in nsrmap:
+             return
+         tag = prefixname(elem.tag, nsrmap)
++
++        if tag == 'pre':
++            self.inside_pre = 1
++            tag = 'tt'
+         # Previous layers take care of @name
+         id = elem.attrib.pop('id', None)
+         if id is not None:
+@@ -266,14 +275,21 @@
+                 if child.tail:
+                     self.anchor_offset = None
+                     self.serialize_text(child.tail)
++            if prefixname(elem.tag, nsrmap) == 'pre':
++                buffer.write('<br/>\n')
++                self.inside_pre = 0
+             buffer.write('</%s>' % tag)
+         else:
+             buffer.write('/>')
+ 
++
+     def serialize_text(self, text, quot=False):
+         text = text.replace('&', '&amp;')
+         text = text.replace('<', '&lt;')
+         text = text.replace('>', '&gt;')
++        if self.inside_pre:
++                text=text.replace(' ','&nbsp;')
++                text=re.sub(r'(\r\n|\r|\n)', '<br/>\n', text)
+         if quot:
+             text = text.replace('"', '&quot;')
+         self.buffer.write(encode(text))
+@@ -599,19 +615,22 @@
+     oeb = OEBBook(inpath, logger=logger, encoding=opts.encoding)
+     tocadder = HTMLTOCAdder(title=opts.toc_title)
+     tocadder.transform(oeb, context)
+-    mangler = CaseMangler()
+-    mangler.transform(oeb, context)
+-    fbase = context.dest.fbase
+-    fkey = context.dest.fnums.values()
+-    flattener = CSSFlattener(
+-        fbase=fbase, fkey=fkey, unfloat=True, untable=True)
+-    flattener.transform(oeb, context)
+-    rasterizer = SVGRasterizer()
+-    rasterizer.transform(oeb, context)
++    if (0):
++        mangler = CaseMangler()
++        mangler.transform(oeb, context)
++    if (0):
++        fbase = context.dest.fbase
++        fkey = context.dest.fnums.values()
++        flattener = CSSFlattener(
++             fbase=fbase, fkey=fkey, unfloat=True, untable=True)
++        flattener.transform(oeb, context)
++    if (0):
++        rasterizer = SVGRasterizer()
++        rasterizer.transform(oeb, context)
+     trimmer = ManifestTrimmer()
+     trimmer.transform(oeb, context)
+-    mobimlizer = MobiMLizer(ignore_tables=opts.ignore_tables)
+-    mobimlizer.transform(oeb, context)
++    #mobimlizer = MobiMLizer(ignore_tables=opts.ignore_tables)
++    #mobimlizer.transform(oeb, context)
+     writer = MobiWriter(compression=compression, imagemax=imagemax,
+                         prefer_author_sort=opts.prefer_author_sort)
+     writer.dump(oeb, outpath)
+
+=== modified file 'src/calibre/ebooks/oeb/base.py'
+--- src/calibre/ebooks/oeb/base.py	2009-02-07 08:04:54 +0000
++++ src/calibre/ebooks/oeb/base.py	2009-03-28 23:47:41 +0000
+@@ -1471,11 +1471,6 @@
+             writer = DirWriter()
+             writer.dump(self, tdir)
+             path = os.path.join(tdir, urlunquote(hcover.href))
+-            renderer = CoverRenderer(path)
+-            data = renderer.image_data
+-        id, href = self.manifest.generate('cover', 'cover.jpeg')
+-        item = self.manifest.add(id, href, JPEG_MIME, data=data)
+-        return item
+         
+     def _locate_cover_image(self):
+         if self.metadata.cover:
+@@ -1519,7 +1514,6 @@
+         if self.metadata.cover:
+             self.metadata.cover[0].value = cover.id
+             return
+-        self.metadata.add('cover', cover.id)
+     
+     def _all_from_opf(self, opf):
+         self.version = opf.get('version', '1.2')
+
+=== modified file 'src/calibre/ebooks/oeb/transforms/rasterize.py'
+--- src/calibre/ebooks/oeb/transforms/rasterize.py	2009-01-28 01:36:10 +0000
++++ src/calibre/ebooks/oeb/transforms/rasterize.py	2009-03-28 23:40:12 +0000
+@@ -15,11 +15,6 @@
+ from PyQt4.QtCore import QByteArray
+ from PyQt4.QtCore import QBuffer
+ from PyQt4.QtCore import QIODevice
+-from PyQt4.QtGui import QColor
+-from PyQt4.QtGui import QImage
+-from PyQt4.QtGui import QPainter
+-from PyQt4.QtSvg import QSvgRenderer
+-from PyQt4.QtGui import QApplication
+ from calibre.ebooks.oeb.base import XHTML_NS, XHTML, SVG_NS, SVG, XLINK
+ from calibre.ebooks.oeb.base import SVG_MIME, PNG_MIME, JPEG_MIME
+ from calibre.ebooks.oeb.base import xml2str, xpath, namespace, barename
+@@ -31,8 +26,7 @@
+ 
+ class SVGRasterizer(object):
+     def __init__(self):
+-        if QApplication.instance() is None:
+-            QApplication([])
++    	return
+ 
+     def transform(self, oeb, context):
+         oeb.logger.info('Rasterizing SVG images...')
+@@ -44,6 +38,8 @@
+         self.rasterize_cover()
+ 
+     def rasterize_svg(self, elem, width=0, height=0, format='PNG'):
++    	return
++    	
+         data = QByteArray(xml2str(elem))
+         svg = QSvgRenderer(data)
+         size = svg.defaultSize()
+@@ -58,11 +54,6 @@
+         logger = self.oeb.logger
+         logger.info('Rasterizing %r to %dx%d'
+                     % (elem, size.width(), size.height()))
+-        image = QImage(size, QImage.Format_ARGB32_Premultiplied)
+-        image.fill(QColor("white").rgb())
+-        painter = QPainter(image)
+-        svg.render(painter)
+-        painter.end()
+         array = QByteArray()
+         buffer = QBuffer(array)
+         buffer.open(QIODevice.WriteOnly)
+@@ -150,15 +141,9 @@
+             logger = self.oeb.logger
+             logger.info('Rasterizing %r to %dx%d'
+                         % (svgitem.href, size.width(), size.height()))
+-            image = QImage(size, QImage.Format_ARGB32_Premultiplied)
+-            image.fill(QColor("white").rgb())
+-            painter = QPainter(image)
+-            svg.render(painter)
+-            painter.end()
+             array = QByteArray()
+             buffer = QBuffer(array)
+             buffer.open(QIODevice.WriteOnly)
+-            image.save(buffer, 'PNG')
+             data = str(array)
+             manifest = self.oeb.manifest
+             href = os.path.splitext(svgitem.href)[0] + '.png'
+
+=== modified file 'src/calibre/linux.py'
+--- src/calibre/linux.py	2009-03-20 02:02:04 +0000
++++ src/calibre/linux.py	2009-03-28 23:10:37 +0000
+@@ -441,13 +441,6 @@
+     global use_destdir
+     use_destdir = opts.destdir
+     manifest = []
+-    setup_desktop_integration(opts.fatal_errors)
+-    if opts.no_root or os.geteuid() == 0:
+-        manifest += install_man_pages(opts.fatal_errors, use_destdir)
+-        manifest += setup_udev_rules(opts.group_file, not opts.dont_reload, opts.fatal_errors)
+-        manifest += setup_completion(opts.fatal_errors)        
+-    else:
+-        print "Skipping udev, completion, and man-page install for non-root user."
+ 
+     try:
+         from PyQt4 import Qt
+@@ -539,17 +532,7 @@
+ '''
+ 
+ def render_svg(image, dest):
+-    from PyQt4.QtGui import QPainter, QImage
+-    from PyQt4.QtSvg import QSvgRenderer
+-    svg = QSvgRenderer(image.readAll())
+-    painter = QPainter()
+-    image = QImage(128,128,QImage.Format_ARGB32_Premultiplied)
+-    painter.begin(image)
+-    painter.setRenderHints(QPainter.Antialiasing|QPainter.TextAntialiasing|QPainter.SmoothPixmapTransform|QPainter.HighQualityAntialiasing)
+-    painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+-    svg.render(painter)
+-    painter.end()
+-    image.save(dest)
++    return
+ 
+ def setup_desktop_integration(fatal_errors):
+     try:
+
+=== modified file 'src/calibre/web/fetch/simple.py'
+--- src/calibre/web/fetch/simple.py	2009-02-13 18:42:23 +0000
++++ src/calibre/web/fetch/simple.py	2009-03-28 23:32:19 +0000
+@@ -11,7 +11,7 @@
+ from urllib import url2pathname, quote
+ from threading import RLock
+ from httplib import responses
+-from PIL import Image
++import Image
+ from cStringIO import StringIO
+ 
+ from calibre import setup_cli_handlers, browser, sanitize_file_name, \
+
+=== modified file 'upload.py'
+--- upload.py	2009-03-12 19:56:41 +0000
++++ upload.py	2009-03-28 04:14:33 +0000
+@@ -141,8 +141,6 @@
+         ncx_template    = 'ebooks/metadata/ncx.xml',
+         fb2_xsl         = 'ebooks/lrf/fb2/fb2.xsl',
+         metadata_sqlite = 'library/metadata_sqlite.sql',
+-        jquery          = 'gui2/viewer/jquery.js',
+-        jquery_scrollTo = 'gui2/viewer/jquery_scrollTo.js',
+         html_css        = 'ebooks/oeb/html.css',
+     )
+     
+@@ -346,7 +344,6 @@
+     def run(self):
+         print 'Cleaning...'
+         manual.clean()
+-        gui.clean()
+         translations.clean()
+         resources.clean()
+         
+@@ -385,7 +382,6 @@
+     sub_commands = [
+                      ('resources',    lambda self : 'CALIBRE_BUILDBOT' not in os.environ.keys()),
+                      ('translations', lambda self : 'CALIBRE_BUILDBOT' not in os.environ.keys()),
+-                     ('gui',          lambda self : 'CALIBRE_BUILDBOT' not in os.environ.keys()),
+                      ('build_ext',    lambda self: True),
+                      ('build_py',     lambda self: True),
+                      ('build_clib',    _build.has_c_libraries),
+

@@ -1,0 +1,60 @@
+To build the installer, you'll need igorsk's Kindle Firmware tool. Google for it.
+
+If you're going to build out a copy of the Savory disk image, you'll need a cross-compiler:
+
+OSELAS.Toolchain-1.99.3/arm-1136jfs-linux-gnueabi/gcc-4.1.2-glibc-2.5-binutils-2.17-kernel-2.6.18 built with
+
+http://www.oselas.com/software/ptxdist/download/v1.99/ptxdist-1.99.11.tgz
+http://www.oselas.com/software/ptxdist/download/v1.99/ptxdist-1.99.11-patches.tgz
+http://www.oselas.com/oselas/toolchain/download/OSELAS.Toolchain-1.99.3.1.tar.bz2
+
+
+Python - 
+
+URL: http://unladen-swallow.googlecode.com/svn/branches/release-2009Q1-maint
+Revision: 370
+
+    ./configure --with-computed-gotos --prefix=/opt/savory
+
+
+ftp://ftp.qtsoftware.com/qt/source/qt-embedded-linux-opensource-src-4.4.3.tar.gz
+    - cross-compiled
+  LDFLAGS='-L/opt/sysroot/usr/lib/' CFLAGS='-I/opt/sysroot/usr/include/' /var/tmp/maemo-build/src/qt-embedded-linux-opensource-src-4.4.3/configure -qt-freetype -separate-debug-info -no-cups -no-nis -qt-libjpeg -qt-libmng -qt-libpng -qt-libtiff -qt-gif -no-phonon -no-accessibility -release --prefix=/opt/savory -confirm-license -no-pch -no-qt3support -fast -little-endian
+
+http://www.sqlite.org/sqlite-amalgamation-3.6.12.tar.gz
+util-linux-2.12r.tar.gz
+unrarsrc-3.7.5.tar.gz
+sip-4.7.9.tar.gz
+rtf2xml-1.33.tar.gz
+readline-6.0.tar.gz
+pdftohtml-0.39.tar.gz
+ncurses-5.7.tar.gz
+libxslt-1.1.24.tar.gz
+libxml2-2.7.3.tar.gz
+gdbm-1.8.3.tar.gz
+freetype-2.3.9.tar.gz
+fbterm-1.4.tar.gz
+elementtree-1.2.7-20070827-preview.zip
+e2fsprogs-libs-1.41.4.tar.gz
+ImageMagick-6.5.0-9
+dropbear-0.52.tar.gz
+coreutils-7.1.tar.gz
+
+openssl-0.9.8j.tar.gz
+    Cross-compiled
+
+Python packages:
+PIL-1.1.6-py2.6-linux-armv6l.egg
+BeautifulSoup-3.1.0.1-py2.6.egg
+ClientForm-0.2.10-py2.6.egg
+python_dateutil-1.4.1-py2.6.egg
+mechanize-0.1.11-py2.6.egg
+Imaging-1.1.6.tar.gz
+rtf2xml-1.33-py2.6.egg-info
+setuptools-0.6c9-py2.6.egg
+lxml-2.2.tgz
+pyinotify.tgz - http://git.dbzteam.org/?p=pyinotify.git;a=snapshot;h=HEAD;sf=tgz as of  2009-03-30 - pyinotify-0.8.1-py2.6.egg-info
+PythonMagick-0.9.tar.gz
+PyQt-x11-gpl-4.4.4.tar.gz
+
+    --verbose --no-designer-plugin 
