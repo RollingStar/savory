@@ -1,0 +1,135 @@
+#!/tmp/savory/bin/python
+import os
+
+
+os.environ['LD_LIBRARY_PATH'] = '/tmp/savory/lib'
+
+from pyinotify import WatchManager, Notifier, \
+    ThreadedNotifier, ProcessEvent, IN_MOVED_TO, \
+    IN_CREATE
+
+import getopt
+import sys
+import time
+import threading
+conversionQueue = []
+
+cv = threading.Condition()
+
+class PTmp(ProcessEvent):
+    def handle(self,event):
+       cv.acquire()
+       if any(event.pathname.lower().endswith(i) for i in ['html', 'epub','lit','odt','rtf','oebzip','fb2','pdf']):
+            conversionQueue.append( event.pathname)
+       cv.notify()
+       cv.release()
+    def process_IN_CREATE(self, event):
+    	self.handle(event)
+    def process_IN_MOVED_TO(self, event):
+    	self.handle(event)
+
+
+
+class Poller (threading.Thread):
+    global cv
+    def run ( self ):
+        global conversionQueue
+
+
+        wm = WatchManager()  # Watch Manager
+        mask = IN_MOVED_TO | IN_CREATE  # watched events
+
+        p = PTmp()
+        notifier = Notifier(wm, p)
+        wdd = wm.add_watch('/mnt/us/documents', mask, rec=True)
+
+        notifier.loop()
+
+
+
+class Runner (threading.Thread): 
+    converting = 0
+    global cv
+    global conversionQueue
+    def run ( self ):
+        while (1):
+            if (not len(conversionQueue)):
+                cv.acquire()
+                cv.wait()
+                cv.release()
+
+            if len(conversionQueue):
+                self.converting = 1
+                item = conversionQueue.pop(0)
+                time.sleep(8) 
+                print "Now converting " + item
+                os.system("/tmp/savory/bin/convert-to-prc \""+ item+"\"")
+                print "Items in queue: " + str(len(conversionQueue))
+                self.converting = 0
+            else:
+                print "Nothing there. sleeping"
+
+
+# This code from http://mail.python.org/pipermail/python-list/2005-September/340798.html
+def daemonize (pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+    '''This forks the current process into a daemon.
+    The stdin, stdout, and stderr arguments are file names that
+    will be opened and be used to replace the standard file descriptors
+    in sys.stdin, sys.stdout, and sys.stderr.
+    These arguments are optional and default to /dev/null.
+    Note that stderr is opened unbuffered, so
+    if it shares a file with stdout then interleaved output
+    may not appear in the order that you expect.
+    '''
+    # Do first fork.
+    try: 
+        pid = os.fork() 
+        if pid > 0:
+            sys.exit(0) # Exit first parent.
+    except OSError, e: 
+        sys.stderr.write ("fork #1 failed: (%d) %s\n" % (e.errno, e.strerror)   
+ )
+        sys.exit(1)
+        
+    # Decouple from parent environment.
+    os.chdir("/mnt/us") 
+    os.umask(0) 
+    os.setsid() 
+    
+    # Do second fork.
+    try: 
+        pid = os.fork() 
+        if pid > 0:
+            sys.exit(0) # Exit second parent.
+    except OSError, e: 
+        sys.stderr.write ("fork #2 failed: (%d) %s\n" % (e.errno, e.strerror)   
+ )
+        sys.exit(1)
+        
+    # Now I am a daemon!
+   
+    f = open(pidfile, "w")
+    f.write("%d" % os.getpid())
+    f.close()
+ 
+    # Redirect standard file descriptors.
+    si = file(stdin, 'r')
+    so = file(stdout, 'a+')
+    se = file(stderr, 'a+', 0)
+    os.dup2(si.fileno(), sys.stdin.fileno())
+    os.dup2(so.fileno(), sys.stdout.fileno())
+    os.dup2(se.fileno(), sys.stderr.fileno())
+
+def main():
+    opts, args = getopt.getopt(sys.argv[1:], "p:")
+    for o, a in opts:
+        if o == '-p':
+            pidfile = a
+    daemonize(pidfile)
+    my_runner=Runner()
+    my_poller=Poller()
+    my_poller.start()
+    my_runner.start()
+  
+  
+main() 

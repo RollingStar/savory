@@ -1,0 +1,35 @@
+#!/bin/sh
+PATH=/tmp/savory/bin:$PATH
+NAME="savory file conversion daemon"
+DAEMON=/tmp/savory/bin/savory_daemon
+PIDFILE=/var/run/savory-daemon.pid
+_FUNCTIONS=/etc/rc.d/functions
+[ -f ${_FUNCTIONS} ] && . ${_FUNCTIONS}
+
+case "$1" in
+
+   start)
+		mkdir /tmp/savory
+		mount -o loop -o ro /mnt/base-us/system/savory-image.ext3 /tmp/savory
+		if [ -x "$DAEMON" ]; then
+			msg "starting $NAME" I
+			$DAEMON -p $PIDFILE &
+		fi
+		;;
+
+   stop)
+		if [ -r "$PIDFILE" ]; then
+			msg "stopping $NAME" I
+			kill `cat $PIDFILE`
+			rm -f $PIDFILE
+			umount /tmp/savory
+		fi
+		;;
+	*)
+		msg "Usage: /etc/init.d/$NAME {start|stop}" W >&2
+		exit 1
+		;;
+esac
+
+exit 0
+

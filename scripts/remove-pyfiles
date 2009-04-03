@@ -1,0 +1,21 @@
+Building calibre:
+
+
+for i in `find . -name \*.py` ; do 
+	if [ -e ${i}c ]; then
+		echo "Removing non-compiled variants of files for ${i}"
+		rm ${i}
+		rm ${i}o
+	else
+		echo "No file to delete for $i"
+	fi	
+done
+
+# /var/tmp/maemo-build/pylib-take2 # rm -rf /opt/savory/lib/python2.6/site-packages/calibre-0.5.2-py2.6-linux-armv6l.egg/calibre/web/feeds
+# /var/tmp/maemo-build/pylib-take2 # rm -rf /opt/savory/lib/python2.6/site-packages/calibre-0.5.2-py2.6-linux-armv6l.egg/calibre/trac/
+    # pushd python2.6/site-packages/PyQt4
+    # rm QtNetwork.so QtScript.so QtSvg.so QtWebKit.so QtXml.so QtTest.so QtSql.so
+    # popd
+    # rm python2.6/site-packages/calibre-0.5.2-py2.6-linux-armv6l.egg/calibre/ebooks/lrf/fonts
+    # rm python2.6/config/libpython2.6.a
+
