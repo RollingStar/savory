@@ -43,7 +43,7 @@ update_progressbar 60
 
 
 cp $VERSION_FILE $SAVE_PRETTY
-sed 's/$/ UNSUPPORTED SAVORY-0.01/' $SAVE_PRETTY > $VERSION_FILE
+sed 's/$/ UNSUPPORTED SAVORY-0.06/' $SAVE_PRETTY > $VERSION_FILE
 
 update_progressbar 100
 
