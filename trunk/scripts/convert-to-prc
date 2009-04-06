@@ -32,7 +32,14 @@ echo "Begining .mobi translation using Calibre backend at `date`" >> "$LOGFILE"
 echo "Your original file '${FILENAME}' has been moved to ${ARCHIVE_BASE}" >> "$LOGFILE"
 
 dbus-send --system /default com.lab126.powerd.resuming int32:1
+
 /tmp/savory/bin/python /tmp/savory/bin/any2mobi -v "$ARCHIVE/$FILENAME" --dest-profile=Kindle -o "/mnt/us/documents/$FILENAME.mobi" 2>> "$LOGFILE" >> "$LOGFILE"
+
+if [ `echo ${FILENAME} | grep -i '.pdf$'` ]; then
+    /tmp/savory/bin/pdf-to-zipped-pngs "$ARCHIVE/$FILENAME" 
+fi
+
+
 if [ $? != '0' ]; then
     echo "Conversion failed at `date`" >> "$LOGFILE"
     mv "$LOGFILE" "/mnt/us/documents/Failed $FILE_SUBSTR.txt"

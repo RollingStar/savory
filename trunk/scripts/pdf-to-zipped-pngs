@@ -1,0 +1,18 @@
+#!/bin/sh
+
+export LDFLAGS=/tmp/savory/lib:$LDFLAGS
+export PATH=/tmp/savory/bin:$PATH
+PDF=$1
+ZIP=`basename $PDF .pdf`.zip
+WORKDIR="/mnt/us/savory-conversion-tmp/from-pdf/$$"
+echo "We're headed to $WORKDIR"
+mkdir -p "${WORKDIR}"
+cd $WORKDIR
+echo "Converting $PDF"
+pdftoppm -gray $PDF page
+find . -name \*pgm -exec /tmp/savory/bin/pnm2png {} {}.png \;
+zip $ZIP *.png
+mv $ZIP /mnt/us/documents/
+cd ..
+rm -rf "${WORKDIR}"
+
