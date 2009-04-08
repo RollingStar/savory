@@ -12,29 +12,39 @@ import getopt
 import sys
 import time
 import threading
+import subprocess
 conversionQueue = []
-
 cv = threading.Condition()
 
+def maybe_enqueue_file(path):
+       if any(path.lower().endswith(i) for i in ['epub','lit','odt','rtf','oebzip','fb2','pdf'])  and path not in conversionQueue:
+          cv.acquire()
+          print "Converting "+path
+          conversionQueue.append(path)
+          cv.notify() 
+          cv.release()
+
+
 class PTmp(ProcessEvent):
-    def handle(self,event):
-       cv.acquire()
-       if any(event.pathname.lower().endswith(i) for i in ['html', 'epub','lit','odt','rtf','oebzip','fb2','pdf']):
-            conversionQueue.append( event.pathname)
-       cv.notify()
-       cv.release()
-    def process_IN_CREATE(self, event):
-    	self.handle(event)
-    def process_IN_MOVED_TO(self, event):
-    	self.handle(event)
+    def process_default(self,event):
+       maybe_enqueue_file(event.pathname)
 
-
-
-class Poller (threading.Thread):
+class DbusWatcher (threading.Thread):
     global cv
     def run ( self ):
         global conversionQueue
-
+        cmd='/usr/bin/dbus-monitor --system'
+        pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout
+        while 1:
+           line = pipe.readline()
+           if any(line.find(i) != -1 for i in ['usbPlugOut', 'resuming']):
+	   	for f in os.listdir('/mnt/us/documents'):
+			maybe_enqueue_file('/mnt/us/documents/'+f)
+      
+class InotifyListener (threading.Thread):
+    global cv
+    def run ( self ):
+        global conversionQueue
 
         wm = WatchManager()  # Watch Manager
         mask = IN_MOVED_TO | IN_CREATE  # watched events
@@ -42,9 +52,7 @@ class Poller (threading.Thread):
         p = PTmp()
         notifier = Notifier(wm, p)
         wdd = wm.add_watch('/mnt/us/documents', mask, rec=True)
-
         notifier.loop()
-
 
 
 class Runner (threading.Thread): 
@@ -127,8 +135,10 @@ def main():
             pidfile = a
     daemonize(pidfile)
     my_runner=Runner()
-    my_poller=Poller()
-    my_poller.start()
+    my_listener=InotifyListener()
+    my_dbus_watcher=DbusWatcher()
+    my_dbus_watcher.start()
+    my_listener.start()
     my_runner.start()
   
   
