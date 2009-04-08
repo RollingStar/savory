@@ -4,7 +4,7 @@ export LDFLAGS=/tmp/savory/lib:$LDFLAGS
 export PATH=/tmp/savory/bin:$PATH
 PDF=$1
 ZIP=`basename $PDF .pdf`.zip
-WORKDIR="/mnt/us/savory-conversion-tmp/from-pdf/$$"
+WORKDIR="/mnt/us/savory-conversion-temp/from-pdf/$$"
 echo "We're headed to $WORKDIR"
 mkdir -p "${WORKDIR}"
 cd $WORKDIR

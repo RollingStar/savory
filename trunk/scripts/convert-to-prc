@@ -36,7 +36,8 @@ dbus-send --system /default com.lab126.powerd.resuming int32:1
 /tmp/savory/bin/python /tmp/savory/bin/any2mobi -v "$ARCHIVE/$FILENAME" --dest-profile=Kindle -o "/mnt/us/documents/$FILENAME.mobi" 2>> "$LOGFILE" >> "$LOGFILE"
 
 if [ `echo ${FILENAME} | grep -i '.pdf$'` ]; then
-    /tmp/savory/bin/pdf-to-zipped-pngs "$ARCHIVE/$FILENAME" 
+    dbus-send --system /default com.lab126.powerd.resuming int32:1
+    /tmp/savory/bin/pdf-to-zipped-pngs "$ARCHIVE/$FILENAME"  2>> "$LOGFILE" >> "$LOGFILE"
 fi
 
 
