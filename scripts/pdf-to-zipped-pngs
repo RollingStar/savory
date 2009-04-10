@@ -10,7 +10,7 @@ mkdir -p "${WORKDIR}"
 cd $WORKDIR
 echo "Converting $PDF"
 pdftoppm -gray $PDF page
-find . -name \*pgm -exec /tmp/savory/bin/pnm2png {} {}.png \;
+find . -name \*pgm -exec sh -c "/tmp/savory/bin/pnmcrop {} | /tmp/savory/bin/pnm2png > {}.png" \;
 zip $ZIP *.png
 mv $ZIP /mnt/us/documents/
 cd ..
