@@ -33,7 +33,7 @@ echo "Your original file '${FILENAME}' has been moved to ${ARCHIVE_BASE}" >> "$L
 
 dbus-send --system /default com.lab126.powerd.resuming int32:1
 
-/tmp/savory/bin/python /tmp/savory/bin/any2mobi -v "$ARCHIVE/$FILENAME" --dest-profile=Kindle -o "/mnt/us/documents/$FILENAME.mobi" 2>> "$LOGFILE" >> "$LOGFILE"
+/tmp/savory/bin/python /tmp/savory/bin/any2mobi -v "$ARCHIVE/$FILENAME" -t "$FILENAME" --dest-profile=Kindle -o "/mnt/us/documents/$FILENAME.mobi" 2>> "$LOGFILE" >> "$LOGFILE"
 
 if [ `echo ${FILENAME} | grep -i '.pdf$'` ]; then
     dbus-send --system /default com.lab126.powerd.resuming int32:1
