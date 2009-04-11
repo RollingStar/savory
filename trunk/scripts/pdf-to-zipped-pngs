@@ -3,16 +3,17 @@
 export LDFLAGS=/tmp/savory/lib:$LDFLAGS
 export PATH=/tmp/savory/bin:$PATH
 PDF=$1
-ZIP=`basename $PDF .pdf`.zip
+ZIP="`basename $PDF .pdf` (images).zip"
 WORKDIR="/mnt/us/savory-conversion-temp/from-pdf/$$"
 echo "We're headed to $WORKDIR"
 mkdir -p "${WORKDIR}"
 cd $WORKDIR
-echo "Converting $PDF"
+echo "Converting $PDF to images"
 pdftoppm -gray $PDF page
-find . -name \*pgm -exec sh -c "/tmp/savory/bin/pnmcrop {} | /tmp/savory/bin/pnm2png > {}.png" \;
-zip $ZIP *.png
-mv $ZIP /mnt/us/documents/
+find . -name \*pgm -exec sh -c "echo 'Now removing borders from {}'; /tmp/savory/bin/pnmcrop -margin 40 {} | /tmp/savory/bin/pnm2png > {}.png" \;
+echo "Zipping up png files"
+zip "$ZIP" *.png
+mv "$ZIP" /mnt/us/documents/
 cd ..
 rm -rf "${WORKDIR}"
 
