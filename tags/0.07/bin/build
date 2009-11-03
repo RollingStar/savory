@@ -1,0 +1,4 @@
+cd installer
+export COPYFILE_DISABLE=true
+make
+mv *.bin ../release

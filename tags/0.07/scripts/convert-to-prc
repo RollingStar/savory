@@ -1,0 +1,55 @@
+#!/bin/sh
+
+export ARCHIVE_BASE="savory-archive"
+export ARCHIVE="/mnt/us/${ARCHIVE_BASE}"
+export TMPDIR="/mnt/us/savory-conversion-temp"
+export PATH=/tmp/savory/bin:$PATH
+export LD_LIBRARY_PATH=/tmp/savory/lib
+
+
+ulimit -m 96000
+ulimit -t 1200
+
+
+if [ ! -d $TMPDIR ]; then
+	mkdir $TMPDIR
+fi
+
+
+if [ ! -d $ARCHIVE ]; then
+	mkdir $ARCHIVE
+fi
+
+
+mv "$1" $ARCHIVE
+FILENAME=`basename "$1"`
+
+FILE_SUBSTR=`echo $FILENAME|cut -c 1-200`
+
+LOGFILE="/mnt/us/documents/Converting $FILE_SUBSTR.txt"
+
+echo "Begining .mobi translation using Calibre backend at `date`" >> "$LOGFILE"
+echo "Your original file '${FILENAME}' has been moved to ${ARCHIVE_BASE}" >> "$LOGFILE"
+
+dbus-send --system /default com.lab126.powerd.resuming int32:1
+
+/tmp/savory/bin/python /tmp/savory/bin/any2mobi -v "$ARCHIVE/$FILENAME" -t "$FILENAME" --dest-profile=Kindle -o "/mnt/us/documents/$FILENAME.mobi" 2>> "$LOGFILE" >> "$LOGFILE"
+
+if [ `echo ${FILENAME} | grep -i '.pdf$'` ]; then
+    dbus-send --system /default com.lab126.powerd.resuming int32:1
+    /tmp/savory/bin/pdf-to-zipped-pngs "$ARCHIVE/$FILENAME"  2>> "$LOGFILE" >> "$LOGFILE"
+fi
+
+
+if [ $? != '0' ]; then
+    echo "Conversion failed at `date`" >> "$LOGFILE"
+    mv "$LOGFILE" "/mnt/us/documents/Failed $FILE_SUBSTR.txt"
+else
+    echo "Conversion complete at `date`" >> "$LOGFILE"
+    mv "$LOGFILE" $TMPDIR
+fi
+
+dbus-send --system /default com.lab126.powerd.resuming int32:1
+
+
+
