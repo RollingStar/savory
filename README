@@ -1,5 +1,3 @@
-To build the installer, you'll need igorsk's Kindle Firmware tool. Google for it.
-
 If you're going to build out a copy of the Savory disk image, you'll need a cross-compiler:
 
 OSELAS.Toolchain-1.99.3/arm-1136jfs-linux-gnueabi/gcc-4.1.2-glibc-2.5-binutils-2.17-kernel-2.6.18 built with
