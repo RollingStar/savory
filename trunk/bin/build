@@ -1,10 +1,3 @@
 cd installer
 export COPYFILE_DISABLE=true
-cp ../scripts/savoryctl .
-python ../bin/kindle_update_tool.py m -k2 Savory-0.06 savoryctl 001-savory.sh 999-reboot.sh
-python ../bin/kindle_update_tool.py m -k2 RemoveSavory-0.06 savoryctl 001-remove-savory.sh 999-reboot.sh
-rm update_Savory-0.06.dat
-rm update_RemoveSavory-0.06.dat
-rm temp.tar.gz
-rm savoryctl
-
+make
