@@ -1,0 +1,65 @@
+# For the benefit of emacs users: -*- shell-script -*-
+###########################
+# xbindkeys configuration #
+###########################
+#
+# Version: 1.8.2
+#
+# If you edit this file, do not forget to uncomment any lines
+# that you change.
+# The pound(#) symbol may be used anywhere for comments.
+#
+# To specify a key, you can use 'xbindkeys --key' or
+# 'xbindkeys --multikey' and put one of the two lines in this file.
+#
+# The format of a command line is:
+#    "command to start"
+#       associated key
+#
+#
+# A list of keys is in /usr/include/X11/keysym.h and in
+# /usr/include/X11/keysymdef.h
+# The XK_ is not needed.
+#
+# List of modifier:
+#   Release, Control, Shift, Mod1 (Alt), Mod2 (NumLock),
+#   Mod3 (CapsLock), Mod4, Mod5 (Scroll).
+#
+
+# The release modifier is not a standard X modifier, but you can
+# use it if you want to catch release events instead of press events
+
+# By defaults, xbindkeys does not pay attention with the modifiers
+# NumLock, CapsLock and ScrollLock.
+# Uncomment the lines above if you want to pay attention to them.
+
+#keystate_numlock = enable
+
+"xdotool click 1"
+    Release m:0x0 + c:100
+
+"bash -c 'if [ -f /tmp/mousey ]; then xdotool mousedown 1 && rm /tmp/mousey; else xdotool mouseup 1 && touch /tmp/mousey; fi'"
+	shift+	m:0x0 + c:100
+
+"bash -c 'if [ -f /tmp/mousey3 ]; then xdotool mousedown 3 && rm /tmp/mousey3; else xdotool mouseup 3 && touch /tmp/mousey3; fi'"
+	shift +	m:0x0 + c:147
+
+
+"/root/eink_update_daemon"
+    m:0x0 + c:106
+
+"xdotool mousemove_relative -10 0"
+    shift + m:0x0 + c:113
+
+"xdotool mousemove_relative 10 0"
+   shift +  m:0x0 + c:114
+
+
+"xdotool mousemove_relative 0 10"
+  shift +    m:0x0 + c:131
+
+"xdotool mousemove_relative 0 -10"
+	shift +    m:0x0 + c:130
+
+"bash -c 'xdotool key Control+A; xdotool key n'"
+	m:0x0 + c:132

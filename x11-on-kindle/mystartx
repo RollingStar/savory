@@ -1,0 +1,9 @@
+export DISPLAY=:0
+perl /root/eink_update_daemon&
+perl /root/unlock_daemon&
+/usr/local/bin/Xfbdev-4bpp -keybd evdev,,,device=/dev/input/event0 -keybd evdev,,,device=/dev/input/event1 -dpi 167 -retro -extension XKEYBOARD +kb &
+sleep 10;
+xbindkeys -f /root/xbindkeysrc
+xmodmap /root/xmodmaprc
+xterm -bg black -fg white -fn -adobe-courier-bold-r-normal--18-*-*-*-m-*-iso8859-1 -geom 52x43
+exec $0

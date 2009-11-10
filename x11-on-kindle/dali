@@ -1,0 +1,1 @@
+TZ=US/Pacific xdaliclock -fullscreen -geometry 800x600 -fn BUILTIN3

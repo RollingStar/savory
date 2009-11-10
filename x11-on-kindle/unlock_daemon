@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+
+if (-f '/tmp/unlock_daemon') {
+	warn "already running. bailing";
+	exit 1;
+}
+$SIG{INT} = $SIG{DIE}= $SIG{KILL} = sub {
+	unlink('/tmp/unlock_daemon');
+warn "ok, i'm done";
+exit(0);
+};
+
+`touch /tmp/unlock_daemon`;
+while (1){ 
+	`echo "unlock" > /proc/keypad`;
+	`echo "unlock" > /proc/fiveway`;
+		
+}
+
+	unlink('/tmp/unlock_daemon');
+
+
