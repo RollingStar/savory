@@ -1,0 +1,4 @@
+mkdir /tmp/maemo-build
+mount -o nolock 192.168.15.200:/Volumes/maemo-build /tmp/maemo-build
+export PATH=/tmp/savory/bin:/tmp/maemo-build/:/tmp/maemo-build/OSELAS.Toolchain-1.99.3/arm-1136jfs-linux-gnueabi/gcc-4.1.2-glibc-2.5-binutils-2.17-kernel-2.6.18-native/bin/:/mnt/us/unsavory/bin:$PATH
+

@@ -1,0 +1,6 @@
+#!/bin/sh
+telinit 4
+/etc/init.d/framework stop
+/etc/init.d/savoryctl stop
+/mnt/us/jaunty
+
