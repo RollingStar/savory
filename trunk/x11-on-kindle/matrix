@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/lib/xscreensaver/xmatrix -geom 550x750 -mono

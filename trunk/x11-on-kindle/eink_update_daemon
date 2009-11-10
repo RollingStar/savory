@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+if (-f '/tmp/eink_daemon') {
+	warn "already running. bailing";
+	exit 1;
+}
+$SIG{INT} = $SIG{DIE}= $SIG{KILL} = sub {
+	unlink('/tmp/eink_daemon');
+warn "ok, i'm done";
+exit(0);
+};
+
+`touch /tmp/eink_daemon`;
+for(1..5000) {
+	`echo 1 > /proc/eink_fb/update_display`;
+}
+
+	unlink('/tmp/eink_daemon');
+
+
