@@ -1,0 +1,12 @@
+mkdir /tmp/mount
+mount -o loop -o rw /mnt/us/jaunty.img /tmp/mount 
+#mount -o nolock 192.168.15.200:/Users/jesse/kindle/arm-root /tmp/mount
+mount -o bind /dev /tmp/mount/dev
+mount -o bind /sys /tmp/mount/sys
+mount -o bind /dev/pts /tmp/mount/dev/pts
+mount -o bind /dev/shm /tmp/mount/dev/shm
+mount -o bind /proc /tmp/mount/proc
+mount -o bind /tmp /tmp/mount/tmp
+mount -o bind /mnt/us /tmp/mount/mnt/us
+mount -o bind / /tmp/mount/kindle-root
+chroot /tmp/mount /root/mystartx
