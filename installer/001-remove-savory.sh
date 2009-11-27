@@ -31,6 +31,10 @@ if [ -f $NF_INI ]; then
     VAR=$(grep -e '^dlmimes=' $NF_INI)
     VAR2=$(echo $VAR | sed -r -e 's: ?application/pdf::g')
     sed -i -r -e "s:$VAR:$VAR2:g" $NF_INI
+
+    # Special case for Savory 0.06
+    sed -i -r -e "s:dlmimes=application/x-mobipocket-ebook text/x-prc ?application/pdf:dlmimes=application/x-mobipocket-ebook text/x-prc:g" $NF_INI
+
 fi
 
 update_progressbar 60

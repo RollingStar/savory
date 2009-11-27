@@ -1,5 +1,5 @@
 
-name := Savory-0.07
+name := Savory-0.08
 kut := ./kindle_update_tool.py
 tar := gnutar
 

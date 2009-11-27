@@ -45,7 +45,7 @@ update_progressbar 60
 if [ -f $VERSION_FILE ]; then
 #Remove older style version name, and update version number
     sed -i -r 's/ UNSUPPORTED SAVORY-0.[0-9]+//g' $VERSION_FILE
-    sed -i -r 's/( +\+ Savory [0-9]\.[0-9]\.[0-9]|$)/ \+ Savory 0.0.7/' $VERSION_FILE
+    sed -i -r 's/( +\+ Savory [0-9]\.[0-9]\.[0-9]|$)/ \+ Savory 0.0.8/' $VERSION_FILE
 fi
 
 update_progressbar 100
