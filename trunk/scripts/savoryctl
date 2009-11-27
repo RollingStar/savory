@@ -3,7 +3,7 @@ PATH=/tmp/savory/bin:$PATH
 NAME="savory file conversion daemon"
 DAEMON=/tmp/savory/bin/savory_daemon
 PIDFILE=/var/run/savory-daemon.pid
-ROOTFILE=/mnt/us/system/savory-image-007.ext3
+ROOTFILE=/mnt/us/system/savory-image-008.ext3
 
 _FUNCTIONS=/etc/rc.d/functions
 [ -f ${_FUNCTIONS} ] && . ${_FUNCTIONS}
